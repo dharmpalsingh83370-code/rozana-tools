@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rozana Tools – Free EMI, Umar aur Shabd Calculator</title>
+<meta name="description" content="Free online tools: EMI calculator, age calculator (umar) aur word counter (shabd). Hindi/Hinglish mein, mobile friendly, koi signup nahi.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🧮%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind:wght@400;600;700&display=swap">
+<style>
+:root{--bg:#eef3f6;--card:#fff;--ink:#12283a;--mute:#5b7183;--line:#d3dee6;--acc:#e8890c;--accink:#fff;--ok:#1b7a4b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1c27;--card:#172a38;--ink:#e8f0f5;--mute:#93a9b8;--line:#2a4254;--acc:#f5a63a;--accink:#1a1200;--ok:#5fd59a}}
+:root[data-theme="dark"]{--bg:#0f1c27;--card:#172a38;--ink:#e8f0f5;--mute:#93a9b8;--line:#2a4254;--acc:#f5a63a;--accink:#1a1200;--ok:#5fd59a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.6 Hind,system-ui,sans-serif}
+main{max-width:560px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:28px;line-height:1.2;margin:8px 0 4px;font-weight:700}
+.sub{color:var(--mute);margin:0 0 20px}
+nav{display:flex;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:5px;margin-bottom:16px}
+nav button{flex:1;border:0;background:none;color:var(--mute);font:600 15px Hind,sans-serif;padding:10px 4px;border-radius:8px;cursor:pointer}
+nav button[aria-selected="true"]{background:var(--acc);color:var(--accink)}
+section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+section[hidden]{display:none}
+label{display:block;font-weight:600;margin:12px 0 4px}
+input,textarea{width:100%;font:400 17px Hind,sans-serif;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+textarea{min-height:130px;resize:vertical}
+button.go{margin-top:16px;width:100%;border:0;border-radius:10px;background:var(--acc);color:var(--accink);font:700 17px Hind,sans-serif;padding:12px;cursor:pointer}
+:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.out{margin-top:16px;border-top:1px solid var(--line);padding-top:14px}
+.big{font-size:34px;font-weight:700;color:var(--ok);line-height:1.2}
+.row{display:flex;justify-content:space-between;gap:10px;padding:4px 0;color:var(--mute)}
+.row b{color:var(--ink)}
+footer{margin-top:24px;color:var(--mute);font-size:14px;text-align:center}
+</style>
+</head>
+<body>
+<main>
+<h1>Rozana Tools</h1>
+<p class="sub">Free tools jo roz kaam aate hain. Koi signup nahi.</p>
+
+<nav role="tablist">
+<button role="tab" aria-selected="true" data-t="emi">EMI</button>
+<button role="tab" aria-selected="false" data-t="age">Umar</button>
+<button role="tab" aria-selected="false" data-t="words">Shabd</button>
+</nav>
+
+<section id="emi">
+<label for="p">Loan amount (₹)</label><input id="p" type="number" inputmode="decimal" value="500000">
+<label for="r">Byaaj dar (% saalana)</label><input id="r" type="number" inputmode="decimal" value="10">
+<label for="y">Samay (saal)</label><input id="y" type="number" inputmode="decimal" value="5">
+<button class="go" id="emiGo">EMI nikaalo</button>
+<div class="out" id="emiOut" aria-live="polite"></div>
+</section>
+
+<section id="age" hidden>
+<label for="dob">Janm tithi</label><input id="dob" type="date">
+<button class="go" id="ageGo">Umar nikaalo</button>
+<div class="out" id="ageOut" aria-live="polite"></div>
+</section>
+
+<section id="words" hidden>
+<label for="txt">Apna text yahan likho ya paste karo</label>
+<textarea id="txt"></textarea>
+<div class="out">
+<div class="row">Shabd<b id="w">0</b></div>
+<div class="row">Akshar (spaces ke saath)<b id="c">0</b></div>
+<div class="row">Akshar (spaces ke bina)<b id="cs">0</b></div>
+<div class="row">Vaakya<b id="s">0</b></div>
+</div>
+</section>
+
+<footer>Rozana Tools · Aapka data aapke phone se bahar nahi jata</footer>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const inr=n=>'₹ '+Math.round(n).toLocaleString('en-IN');
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav button').forEach(x=>x.setAttribute('aria-selected',x===b));
+  ['emi','age','words'].forEach(id=>$(id).hidden=id!==b.dataset.t);
+});
+$('emiGo').onclick=()=>{
+  const P=+$('p').value,r=+$('r').value/1200,n=+$('y').value*12;
+  if(!(P>0&&n>0&&r>=0)){$('emiOut').textContent='Sahi amount, byaaj aur saal daalo.';return;}
+  const e=r===0?P/n:P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1),t=e*n;
+  $('emiOut').innerHTML='<div>Mahine ki EMI</div><div class="big">'+inr(e)+'</div>'+
+  '<div class="row">Kul byaaj<b>'+inr(t-P)+'</b></div><div class="row">Kul bhugtaan<b>'+inr(t)+'</b></div>';
+};
+$('ageGo').onclick=()=>{
+  const v=$('dob').value;if(!v){$('ageOut').textContent='Pehle janm tithi chuno.';return;}
+  const d=new Date(v),t=new Date();
+  if(d>t){$('ageOut').textContent='Janm tithi aaj se pehle ki honi chahiye.';return;}
+  let y=t.getFullYear()-d.getFullYear(),m=t.getMonth()-d.getMonth(),dd=t.getDate()-d.getDate();
+  if(dd<0){m--;dd+=new Date(t.getFullYear(),t.getMonth(),0).getDate();}
+  if(m<0){y--;m+=12;}
+  const days=Math.floor((t-d)/864e5);
+  $('ageOut').innerHTML='<div class="big">'+y+' saal, '+m+' mahine, '+dd+' din</div><div class="row">Kul din<b>'+days.toLocaleString('en-IN')+'</b></div>';
+};
+$('txt').oninput=e=>{
+  const s=e.target.value;
+  $('w').textContent=(s.trim().match(/\S+/g)||[]).length;
+  $('c').textContent=s.length;
+  $('cs').textContent=s.replace(/\s/g,'').length;
+  $('s').textContent=(s.match(/[^.!?।]+[.!?।]+/g)||[]).length;
+};
+</script>
+</body>
+  </html>
