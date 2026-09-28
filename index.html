@@ -15,7 +15,9 @@ html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.6 Hind,system-ui,sans-serif}
 main{max-width:560px;margin:0 auto;padding:20px 16px 40px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px}
 h1{font-size:28px;line-height:1.2;margin:8px 0 4px;font-weight:700}
+#snd{border:1px solid var(--line);background:var(--card);border-radius:10px;font-size:20px;padding:6px 10px;cursor:pointer}
 .sub{color:var(--mute);margin:0 0 20px}
 nav{display:flex;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:5px;margin-bottom:16px}
 nav button{flex:1;border:0;background:none;color:var(--mute);font:600 15px Hind,sans-serif;padding:10px 4px;border-radius:8px;cursor:pointer}
@@ -36,7 +38,10 @@ footer{margin-top:24px;color:var(--mute);font-size:14px;text-align:center}
 </head>
 <body>
 <main>
+<div class="top">
 <h1>Rozana Tools</h1>
+<button id="snd" aria-label="Sound on ya off">🔊</button>
+</div>
 <p class="sub">Free tools jo roz kaam aate hain. Koi signup nahi.</p>
 
 <nav role="tablist">
@@ -75,27 +80,59 @@ footer{margin-top:24px;color:var(--mute);font-size:14px;text-align:center}
 <script>
 const $=id=>document.getElementById(id);
 const inr=n=>'₹ '+Math.round(n).toLocaleString('en-IN');
+
+let soundOn=true,ac;
+function beep(f,d){
+  if(!soundOn)return;
+  d=d||0.09;
+  try{
+    ac=ac||new (window.AudioContext||window.webkitAudioContext)();
+    if(ac.state==='suspended')ac.resume();
+    const o=ac.createOscillator(),g=ac.createGain();
+    o.type='sine';o.frequency.value=f;
+    g.gain.setValueAtTime(0.12,ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001,ac.currentTime+d);
+    o.connect(g);g.connect(ac.destination);
+    o.start();o.stop(ac.currentTime+d);
+  }catch(e){}
+}
+const ding=()=>{beep(660);setTimeout(()=>beep(880,0.14),100);};
+const oops=()=>beep(200,0.18);
+
+$('snd').onclick=()=>{
+  soundOn=!soundOn;
+  $('snd').textContent=soundOn?'🔊':'🔇';
+  beep(800);
+};
+
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  beep(520);
   document.querySelectorAll('nav button').forEach(x=>x.setAttribute('aria-selected',x===b));
   ['emi','age','words'].forEach(id=>$(id).hidden=id!==b.dataset.t);
 });
+
 $('emiGo').onclick=()=>{
   const P=+$('p').value,r=+$('r').value/1200,n=+$('y').value*12;
-  if(!(P>0&&n>0&&r>=0)){$('emiOut').textContent='Sahi amount, byaaj aur saal daalo.';return;}
+  if(!(P>0&&n>0&&r>=0)){oops();$('emiOut').textContent='Sahi amount, byaaj aur saal daalo.';return;}
   const e=r===0?P/n:P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1),t=e*n;
   $('emiOut').innerHTML='<div>Mahine ki EMI</div><div class="big">'+inr(e)+'</div>'+
   '<div class="row">Kul byaaj<b>'+inr(t-P)+'</b></div><div class="row">Kul bhugtaan<b>'+inr(t)+'</b></div>';
+  ding();
 };
+
 $('ageGo').onclick=()=>{
-  const v=$('dob').value;if(!v){$('ageOut').textContent='Pehle janm tithi chuno.';return;}
+  const v=$('dob').value;
+  if(!v){oops();$('ageOut').textContent='Pehle janm tithi chuno.';return;}
   const d=new Date(v),t=new Date();
-  if(d>t){$('ageOut').textContent='Janm tithi aaj se pehle ki honi chahiye.';return;}
+  if(d>t){oops();$('ageOut').textContent='Janm tithi aaj se pehle ki honi chahiye.';return;}
   let y=t.getFullYear()-d.getFullYear(),m=t.getMonth()-d.getMonth(),dd=t.getDate()-d.getDate();
   if(dd<0){m--;dd+=new Date(t.getFullYear(),t.getMonth(),0).getDate();}
   if(m<0){y--;m+=12;}
   const days=Math.floor((t-d)/864e5);
   $('ageOut').innerHTML='<div class="big">'+y+' saal, '+m+' mahine, '+dd+' din</div><div class="row">Kul din<b>'+days.toLocaleString('en-IN')+'</b></div>';
+  ding();
 };
+
 $('txt').oninput=e=>{
   const s=e.target.value;
   $('w').textContent=(s.trim().match(/\S+/g)||[]).length;
@@ -105,4 +142,4 @@ $('txt').oninput=e=>{
 };
 </script>
 </body>
-  </html>
+</html>
